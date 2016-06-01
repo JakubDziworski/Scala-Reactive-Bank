@@ -1,0 +1,13 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET         /v1/test                       @controllers.AccountSettingsController.test
+POST        /v1/settings                   @controllers.AccountSettingsController.setSettings
+GET         /v1/settings/:accountId        @controllers.AccountSettingsController.getSettings(accountId:Long)
+
+# Swagger
+GET         /v1/swagger.json               @controllers.ApiHelpController.getResources
+GET         /v1/swagger-ui                 controllers.Assets.at(path="/public/swagger-ui/", file="/index.html")
+GET         /v1/*file                      controllers.Assets.at(path="/public/swagger-ui/", file)

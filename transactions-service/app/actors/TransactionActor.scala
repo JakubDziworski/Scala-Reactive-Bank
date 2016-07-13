@@ -22,6 +22,7 @@ case class TransactionActor(dao: TransactionDao) extends Actor {
   }
 
   def stratTransaction(transaction: Transaction) = {
+
     val transactionId = dao.getNextAvailableTransactionId
     val transactionWithID = Transaction(transaction.from, transaction.to, transaction.title, transaction.cashAmount, Some(transactionId))
     generateAndSendBackVerificicationCode(transactionWithID)

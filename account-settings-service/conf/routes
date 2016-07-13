@@ -5,7 +5,8 @@
 # Home page
 GET         /v1/test                       @controllers.AccountSettingsController.test
 POST        /v1/settings                   @controllers.AccountSettingsController.setSettings
-GET         /v1/settings/:accountId        @controllers.AccountSettingsController.getSettings(accountId:Long)
+#GET         /v1/settings/:accountId        @controllers.AccountSettingsController.getSettings(accountId:Long)
+POST         /v1/settings/checkPermissions       @controllers.AccountSettingsController.checkPermissions
 
 # Swagger
 GET         /v1/swagger.json               @controllers.ApiHelpController.getResources

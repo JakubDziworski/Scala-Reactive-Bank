@@ -8,12 +8,14 @@ import akka.actor.{ActorDSL, ActorSystem, Props}
 import com.typesafe.scalalogging.LazyLogging
 import io.swagger.annotations._
 import models.dao.TransactionDao
-import models.{TransactionVerification, Transaction}
+import models.{Transaction, TransactionVerification}
 import play.api.libs.json.{JsSuccess, Json}
-import play.api.mvc.{AnyContent, Action, Controller}
+import play.api.mvc.{Action, AnyContent, Controller}
 import play.mvc.Http.Request
 import play.mvc.Result
 import akka.pattern.ask
+import play.api.libs.ws.WSClient
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import scala.concurrent.Future
 
@@ -22,7 +24,7 @@ import scala.concurrent.Future
   */
 
 @Api("Transaction Service")
-case class TransactionController @Inject() (transactionDao: TransactionDao) extends Controller with LazyLogging {
+case class TransactionController @Inject() (ws:WSClient,transactionDao: TransactionDao) extends Controller with LazyLogging {
 
   implicit val actorSystem = ActorSystem("Transactions")
   val transactionActor = actorSystem.actorOf(Props(new TransactionActor(transactionDao)))
@@ -34,13 +36,22 @@ case class TransactionController @Inject() (transactionDao: TransactionDao) exte
 
   @ApiOperation(value = "Trigger transaction")
   @ApiImplicitParams(Array(new ApiImplicitParam(name = "transaction", dataType = "models.Transaction", required = true, paramType = "body")))
-  def startTransaction = Action(parse.json) { request =>
+  def startTransaction = Action.async(parse.json) { request =>
     Json.fromJson[Transaction](request.body) match {
       case JsSuccess(transaction,_) => {
-        implicit val i = inbox()
-        transactionActor ! StartTransaction(transaction)
-        i.receive() match {
-          case sms:TransactionVerification => Ok(Json.toJson[TransactionVerification](sms))
+        val post = ws.url("http://localhost:9001/v1/settings/checkPermissions")
+            .withHeaders("Content-Type" -> "application/json")
+            .post("{\"accountId\": "+transaction.from + ",\"cashAmount\": " + transaction.cashAmount + "}")
+        post.map {
+          case response if response.status == 200 => {
+            implicit val i = inbox()
+            transactionActor ! StartTransaction(transaction)
+            i.receive() match {
+              case sms:TransactionVerification => Ok(Json.toJson[TransactionVerification](sms))
+            }
+          }
+          case  response if response.status == 400 => BadRequest("The transaction cannot be performed due to permissions")
+          case _ => BadRequest("Unknown error")
         }
       }
     }

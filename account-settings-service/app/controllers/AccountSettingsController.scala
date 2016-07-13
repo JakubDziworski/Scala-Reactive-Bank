@@ -3,10 +3,11 @@ package controllers
 import javax.inject.Inject
 
 import com.typesafe.scalalogging.LazyLogging
-import io.swagger.annotations._
-import models.Settings
+import io.swagger.annotations.{ApiImplicitParams, _}
+import models.{PermissionCheck, Settings}
 import models.dao.AccountSettingsDao
-import play.api.libs.json.{JsSuccess, Json}
+import play.api.libs.json._
+import play.api.libs.functional.syntax._
 import play.api.mvc.{Action, Controller}
 
 /**
@@ -32,18 +33,28 @@ case class AccountSettingsController @Inject()(accountSettingsDao: AccountSettin
     Json.fromJson[Settings](request.body) match {
       case JsSuccess(newSettings, _) => {
         val currentSettings = accountSettingsDao.getCurrentSettings(newSettings.accountId)
-        val mergedSettings = Settings.merge(currentSettings, newSettings)
+        val mergedSettings = if (currentSettings.isDefined) Settings.merge(currentSettings.get, newSettings) else newSettings;
         accountSettingsDao.saveSettings(mergedSettings)
         Ok("Sucesfully changed settings")
       }
     }
   }
 
-  @ApiOperation(value = "get settings")
-  def getSettings(accountId:Long) = Action { request =>
-    Ok(Json.toJson[Settings](accountSettingsDao.getCurrentSettings(accountId)))
-  }
+//  @ApiOperation(value = "get settings")
+//  def getSettings(accountId:Long) = Action { request =>
+//    Ok(Json.toJson[Settings](accountSettingsDao.getCurrentSettings(accountId)))
+//  }
 
+
+  implicit def tuplesWrites = Json.reads[PermissionCheck]
+
+  @ApiOperation(value = "checkPermissions")
+  @ApiImplicitParams(Array(new ApiImplicitParam(name = "checkPermissions", dataType = "models.PermissionCheck", required = true, paramType = "body")))
+  def checkPermissions = Action(parse.json) { request =>
+    Json.fromJson[PermissionCheck](request.body) match {
+      case JsSuccess(permissionCheck,_) => if(accountSettingsDao.isAllowed(permissionCheck)) Ok else BadRequest("transaction not allowed")
+    }
+  }
 }
 
 

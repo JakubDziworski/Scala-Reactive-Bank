@@ -16,7 +16,7 @@ import scala.collection.mutable
 @Singleton
 class AccountSettingsDao extends LazyLogging {
 
-  val settings: mutable.Map[Long, Settings] = mutable.HashMap[Long, Settings](1L -> Settings(1, Some(3000), Some(3)))
+  val settings: mutable.Map[Long, Settings] = mutable.HashMap[Long, Settings](1L -> Settings(1, Some(3000)))
 
   def saveSettings(mergedSettings: Settings): Unit = {
     settings += (mergedSettings.accountId -> mergedSettings)
@@ -28,7 +28,7 @@ class AccountSettingsDao extends LazyLogging {
 
   def isAllowed(permissionCheck: PermissionCheck): Boolean = {
     return settings.get(permissionCheck.accountId).map( s => {
-      permissionCheck.cashAmount < s.transactionValueLimit.getOrElse(50000)
+      permissionCheck.cashAmount <= s.transactionValueLimit.getOrElse(50000)
     }).getOrElse(false)
   }
 

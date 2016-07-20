@@ -1,11 +1,14 @@
 import exceptions.ApplicationException
-import play.api.{mvc, GlobalSettings}
-import play.api.mvc.Results
-import play.libs.F.Promise
-import play.mvc.Http.RequestHeader
-import play.api.mvc.Result
+import models.Transaction
+import models.dao.Transactions
+import play.api.mvc.{Result, Results}
+import play.api.{Application, GlobalSettings, mvc}
+import slick.driver.H2Driver.api._
+import slick.jdbc.meta.MTable
 
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 
 
 /**
@@ -16,7 +19,9 @@ object Global extends GlobalSettings {
   override def onError(request: mvc.RequestHeader, ex: Throwable): Future[Result] = {
     Future.successful(ex match {
       case appException: ApplicationException => appException.getHttpResponse
-      case ex : Throwable => Results.BadRequest("Unknown error has occured :"+ ex.getMessage)
+      case ex: Throwable => Results.BadRequest("Unknown error has occured :" + ex.getMessage)
     })
   }
+
+
 }

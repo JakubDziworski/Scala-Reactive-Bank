@@ -9,14 +9,13 @@ import com.typesafe.scalalogging.LazyLogging
 import io.swagger.annotations._
 import models.dao.TransactionDao
 import models.{Transaction, TransactionVerification}
+import play.api.Play
 import play.api.libs.json.{JsSuccess, Json}
 import play.api.mvc.{Action, AnyContent, Controller}
-import play.mvc.Http.Request
-import play.mvc.Result
-import akka.pattern.ask
+import play.api.Play.current
 import play.api.libs.ws.WSClient
-import scala.concurrent.ExecutionContext.Implicits.global
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 /**
@@ -31,7 +30,7 @@ case class TransactionController @Inject() (ws:WSClient,transactionDao: Transact
 
   @ApiOperation(value = "Test if API is reachable")
   def test = Action {
-    Ok("Reactive Bank - Transactions Service - REACHABLE")
+    Ok("Reactive Bank - Transactions Service - REACHABLE" + Play.current.routes)
   }
 
   @ApiOperation(value = "Trigger transaction")
@@ -39,7 +38,7 @@ case class TransactionController @Inject() (ws:WSClient,transactionDao: Transact
   def startTransaction = Action.async(parse.json) { request =>
     Json.fromJson[Transaction](request.body) match {
       case JsSuccess(transaction,_) => {
-        val post = ws.url("http://localhost:9001/v1/settings/checkPermissions")
+        val post = ws.url(Play.application.configuration.getString("url.service.settings.check.permissions").getOrElse(""))
             .withHeaders("Content-Type" -> "application/json")
             .post("{\"accountId\": "+transaction.from + ",\"cashAmount\": " + transaction.cashAmount + "}")
         post.map {

@@ -6,9 +6,13 @@ import exceptions.{BadVerificationCodeException, TransactionNotAwaitingVerificat
 import akka.actor.Actor
 import akka.actor.Status.Failure
 import models.dao.TransactionDao
-import models.{TransactionVerification, Transaction}
+import models.{Transaction, TransactionVerification}
 import org.mindrot.jbcrypt.BCrypt
 import play.api.libs.json.Json
+import scala.concurrent.ExecutionContext.Implicits.global
+
+
+import scala.concurrent.Future
 
 /**
   * Created by kuba on 27.05.16.
@@ -22,13 +26,12 @@ case class TransactionActor(dao: TransactionDao) extends Actor {
   }
 
   def stratTransaction(transaction: Transaction) = {
-
-    val transactionId = dao.getNextAvailableTransactionId
-    val transactionWithID = Transaction(transaction.from, transaction.to, transaction.title, transaction.cashAmount, Some(transactionId))
-    generateAndSendBackVerificicationCode(transactionWithID)
-    dao.addTransaction(transactionWithID)
+    dao.addTransaction(transaction)
+    generateAndSendBackVerificicationCode(transaction)
   }
 
+  //to powinno byc w nowym aktorze
+  //moze byc wyorzystane do timeoutowania
   def generateAndSendBackVerificicationCode(startTransaction: Transaction) = {
     val smsCode = SmsGenerator.getRandomCode
     val smsVerification = TransactionVerification(startTransaction.id.get, smsCode)
@@ -37,38 +40,37 @@ case class TransactionActor(dao: TransactionDao) extends Actor {
   }
 
   def verifyTransaction(verification: TransactionVerification) = {
-    if (dao.isAwaitingVerification(verification.transactionId)) {
-      dao.getVerificationCodeForTransaction(verification.transactionId) match {
-        case Some(code) => {
-          if (code == verification.smscode) {
-            sender ! "Transaction sucesfully verified"
-            dao markTransactionToCompleted (verification)
-          } else {
-            sender ! Failure(BadVerificationCodeException(verification))
-          }
+    dao.getVerificationCodeForTransaction(verification.transactionId).onSuccess {
+      case code => {
+        if (code == verification.smscode) {
+          sender ! "Transaction sucesfully verified"
+          dao markTransactionToCompleted (verification)
+        } else {
+          sender ! Failure(BadVerificationCodeException(verification))
         }
       }
-    } else {
-      val exception = TransactionNotAwaitingVerificationException(verification.transactionId)
-      sender ! Failure(exception)
     }
   }
 
   def cancelTransaction(transactionId: Long) = {
-    if (dao.isAwaitingVerification(transactionId)) {
-      sender ! "Transaction sucesfully cancelled"
-      dao.cancelTransaction(transactionId)
-    } else sender ! Failure(TransactionNotAwaitingVerificationException(transactionId))
+    val cancelTransactionFuture: Future[Unit] = dao.cancelTransaction(transactionId)
+    cancelTransactionFuture.onSuccess {
+      case _ => sender ! "Transaction sucesfully cancelled"
+    }
+    cancelTransactionFuture.onFailure {
+      case _ => sender ! "Canceling transaction failed"
+    }
   }
 }
 
 case class StartTransaction(transaction: Transaction)
 
 case class VerifyTransactionWithSms(smsVerifcation: TransactionVerification)
+
 case class CancelTransaction(transactionId: Long)
 
 object SmsGenerator {
-  def getRandomCode:String = {
+  def getRandomCode: String = {
     (1000 + util.Random.nextInt(9000)).toString
   }
 }

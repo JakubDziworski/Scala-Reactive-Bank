@@ -13,7 +13,9 @@ libraryDependencies ++= Seq(
   cache,
   ws,
   specs2 % Test,
-  "io.swagger" %% "swagger-play2" % "1.5.1"
+  "io.swagger" %% "swagger-play2" % "1.5.1",
+  "com.h2database" % "h2" % "1.3.175",
+  "com.typesafe.slick" %% "slick" % "3.0.0"
 )
 
 libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.4.0"

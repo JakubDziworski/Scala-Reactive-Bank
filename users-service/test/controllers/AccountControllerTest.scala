@@ -8,7 +8,6 @@ import play.api.test.{FakeRequest, PlaySpecification}
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-
 /**
   * Created by kuba on 25.05.16.
   */

@@ -2,15 +2,12 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 
-import com.softwaremill.macwire._
 import com.typesafe.scalalogging.LazyLogging
 import io.swagger.annotations.{ApiImplicitParams, _}
 import models.Account
 import models.dao.AccountDao
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.mvc.{Action, Controller, Result}
-import scala.concurrent.ExecutionContext.Implicits.global
-
 
 /**
   * Created by kuba on 25.05.16.
@@ -56,8 +53,6 @@ case class AccountController @Inject()(val accountDao: AccountDao) extends Contr
       case JsError(error) => BadRequest("Error during parsing" + error)
     }
   }
-
-
 
   @ApiImplicitParams(Array(new ApiImplicitParam(name = "withdraw value", dataType = "java.math.BigDecimal", required = true, paramType = "body")))
   def withDraw(accountId: Long) = Action(parse.json) {

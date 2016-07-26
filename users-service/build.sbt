@@ -1,6 +1,6 @@
 import play.sbt.PlayImport._
 
-name := """Reactive-Bank"""
+name := """Reactive Bank Account Service"""
 
 version := "1.0-SNAPSHOT"
 

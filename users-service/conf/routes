@@ -3,11 +3,13 @@
 # ~~~~
 
 # Home page
-GET         /v1/test                      @controllers.UserController.test
-POST        /v1/addUser                   @controllers.UserController.addUser
-GET         /v1/getUser/:userEmail        @controllers.UserController.getUser(userEmail)
+GET         /v1/test                      @controllers.AccountController.test
+POST        /v1/account                   @controllers.AccountController.addAccount
+GET         /v1/account/:accountId        @controllers.AccountController.getAccount(accountId:Long)
+POST        /v1/account/withdraw          @controllers.AccountController.withDraw(accountId:Long)
+POST        /v1/account/deposit           @controllers.AccountController.deposit(accountId:Long)
 
 # Swagger
 GET         /v1/swagger.json              @controllers.ApiHelpController.getResources
-# Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file                 controllers.Assets.at(path="/public", file)
+GET         /v1/swagger-ui                controllers.Assets.at(path="/public/swagger-ui/", file="/index.html")
+GET         /v1/*file                     controllers.Assets.at(path="/public/swagger-ui/", file)

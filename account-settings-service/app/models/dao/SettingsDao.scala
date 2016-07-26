@@ -1,14 +1,14 @@
 package models.dao
+
 import javax.inject.Singleton
 
 import com.typesafe.scalalogging.LazyLogging
-import models.tables.SettingsTable
-import models.{PermissionCheck, Setting}
+import models.domain.Setting
+import models.domain.dto.Transaction
 import slick.driver.PostgresDriver.api._
 import slick.jdbc.meta.MTable
 import slick.lifted.TableQuery
 
-import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
@@ -16,7 +16,7 @@ import scala.concurrent.{Await, Future}
   * Created by kuba on 26.05.16.
   */
 @Singleton
-class AccountSettingsDao extends LazyLogging {
+class SettingsDao extends LazyLogging {
 
   val settings = TableQuery[SettingsTable]
 
@@ -32,7 +32,6 @@ class AccountSettingsDao extends LazyLogging {
     }
   }, Duration.Inf)
 
-
   def saveSettings(setting: Setting): Future[Unit] = {
     db.run(
       settings += setting
@@ -44,13 +43,6 @@ class AccountSettingsDao extends LazyLogging {
       settings.filter(_.accountId === accountId).result.head
     )
   }
-
-  def isAllowed(permissionCheck: PermissionCheck): Future[Boolean] = {
-    return getCurrentSettings(permissionCheck.accountId).map( s => {
-      permissionCheck.cashAmount < s.transactionValueLimit.getOrElse(50000)
-    })
-  }
-
 }
 
 

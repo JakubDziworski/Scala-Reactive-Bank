@@ -3,20 +3,26 @@ package controllers
 import javax.inject.Inject
 
 import com.typesafe.scalalogging.LazyLogging
+import models.dao.SettingsDao
 import io.swagger.annotations.{ApiImplicitParams, _}
-import models.{PermissionCheck, Setting}
-import models.dao.AccountSettingsDao
+import models.domain.Setting
+import models.domain.dto.Transaction
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{Action, Controller, Request, Result}
+
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
   * Created by kuba on 25.05.16.
   */
 
 @Api("Account Settings Service")
-case class AccountSettingsController @Inject()(accountSettingsDao: AccountSettingsDao) extends Controller with LazyLogging {
+case class AccountSettingsController @Inject()(accountSettingsDao: SettingsDao) extends Controller with LazyLogging {
+
+  val DEFAULT_LIMIT:BigDecimal = 50000
+  implicit def tuplesWrites = Json.reads[Transaction]
 
   @ApiOperation(value = "Test if API is reachable")
   def test = Action {
@@ -27,34 +33,35 @@ case class AccountSettingsController @Inject()(accountSettingsDao: AccountSettin
   @ApiImplicitParams(Array(new ApiImplicitParam(name = "settings", dataType = "models.Setting", required = true, paramType = "body")))
   def setSettings = Action.async(parse.json) { request =>
     Json.fromJson[Setting](request.body) match {
-      case JsSuccess(newSettings, _) => {
-        accountSettingsDao.saveSettings(newSettings).map {
+      case JsSuccess(setting, _) => {
+        accountSettingsDao.saveSettings(setting).map {
           _ => Ok("Sucesfully changed settings")
         }
       }
     }
   }
 
-  //  @ApiOperation(value = "get settings")
-  //  def getSettings(accountId:Long) = Action { request =>
-  //    Ok(Json.toJson[Settings](accountSettingsDao.getCurrentSettings(accountId)))
-  //  }
-
-
-  implicit def tuplesWrites = Json.reads[PermissionCheck]
-
   @ApiOperation(value = "checkPermissions")
   @ApiImplicitParams(Array(new ApiImplicitParam(name = "checkPermissions", dataType = "models.PermissionCheck", required = true, paramType = "body")))
   def checkPermissions = Action.async(parse.json) { request =>
-    Json.fromJson[PermissionCheck](request.body) match {
-      case JsSuccess(permissionCheck, _) => {
-        accountSettingsDao.isAllowed(permissionCheck).map {
-          case true => Ok("Transaction allowed")
-          case false => BadRequest("Transaction not allowed - limit exceeded")
+    Json.fromJson(request.body) match {
+      case JsSuccess(transaction, _) => {
+        def transactionVerifier(setting:Setting): Result = {
+          val transferValue = transaction.transferValue
+          val transferLimit = setting.transactionValueLimit.getOrElse(DEFAULT_LIMIT)
+          if (transferValue <= 0) {
+            return BadRequest("Cannot transfer non positive value")
+          }
+          if (transferLimit >= transferValue) {
+            return Ok("Transaction allowed")
+          }
+          return BadRequest("Transaction not allowed - limit exceeded")
         }
+        accountSettingsDao.getCurrentSettings(transaction.accountId).map(transactionVerifier)
       }
     }
   }
+
 }
 
 

@@ -1,8 +1,7 @@
-package models.tables
-import models.Setting
+package models.dao
+
+import models.domain.Setting
 import slick.driver.PostgresDriver.api._
-import slick.jdbc.meta.MTable
-import slick.lifted.ProvenShape
 /**
   * Created by kuba on 20.07.16.
   */

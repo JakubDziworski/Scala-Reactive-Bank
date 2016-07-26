@@ -1,10 +1,6 @@
-package models
-
-import java.math.BigInteger
+package models.domain
 
 import play.api.libs.json._
-import play.api.libs.json.Reads._ // Custom validation helpers
-import play.api.libs.functional.syntax._
 /**
   * Created by kuba on 31.05.16.
   */

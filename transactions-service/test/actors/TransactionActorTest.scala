@@ -30,13 +30,13 @@ class TransactionActorTest extends TestKit(ActorSystem()) with SpecificationLike
       dao.getNextAvailableTransactionId returns 1
 
       implicit val i = inbox()
-      transactinoActorRef ! StartTransaction(Transaction("483275843", "493859435", "car payment", 3543, None))
+      transactinoActorRef ! StartTransaction(Transaction(483275843, 493859435, "car payment", 3543, None))
 
       i.receive() must beLike {
         case TransactionVerification(1, _) => ok
       }
       there was one(dao).getNextAvailableTransactionId
-      there was one(dao).addTransaction(Transaction("483275843", "493859435", "car payment", 3543, Some(1)))
+      there was one(dao).addTransaction(Transaction(483275843, 493859435, "car payment", 3543, Some(1)))
       there was one(dao).addAwaitingVerification(like[TransactionVerification] { case TransactionVerification(1, _) => ok })
       there were noMoreCallsTo(dao)
     }

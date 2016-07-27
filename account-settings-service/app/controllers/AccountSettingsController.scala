@@ -30,7 +30,7 @@ case class AccountSettingsController @Inject()(accountSettingsDao: SettingsDao) 
   }
 
   @ApiOperation(value = "set settings")
-  @ApiImplicitParams(Array(new ApiImplicitParam(name = "settings", dataType = "models.Setting", required = true, paramType = "body")))
+  @ApiImplicitParams(Array(new ApiImplicitParam(name = "settings", dataType = "models.domain.Setting", required = true, paramType = "body")))
   def setSettings = Action.async(parse.json) { request =>
     Json.fromJson[Setting](request.body) match {
       case JsSuccess(setting, _) => {
@@ -42,7 +42,7 @@ case class AccountSettingsController @Inject()(accountSettingsDao: SettingsDao) 
   }
 
   @ApiOperation(value = "checkPermissions")
-  @ApiImplicitParams(Array(new ApiImplicitParam(name = "checkPermissions", dataType = "models.PermissionCheck", required = true, paramType = "body")))
+  @ApiImplicitParams(Array(new ApiImplicitParam(name = "checkPermissions", dataType = "models.domain.dto.Transaction", required = true, paramType = "body")))
   def checkPermissions = Action.async(parse.json) { request =>
     Json.fromJson(request.body) match {
       case JsSuccess(transaction, _) => {

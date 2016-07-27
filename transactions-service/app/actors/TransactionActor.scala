@@ -16,13 +16,12 @@ import play.api.libs.json.Json
 case class TransactionActor(dao: TransactionDao) extends Actor {
 
   override def receive = {
-    case StartTransaction(transaction) => stratTransaction(transaction)
+    case StartTransaction(transaction) => startTransaction(transaction)
     case VerifyTransactionWithSms(smsVerification) => verifyTransaction(smsVerification)
     case CancelTransaction(transactionId) => cancelTransaction(transactionId)
   }
 
-  def stratTransaction(transaction: Transaction) = {
-
+  def startTransaction(transaction: Transaction) = {
     val transactionId = dao.getNextAvailableTransactionId
     val transactionWithID = Transaction(transaction.from, transaction.to, transaction.title, transaction.cashAmount, Some(transactionId))
     generateAndSendBackVerificicationCode(transactionWithID)
@@ -72,7 +71,3 @@ object SmsGenerator {
     (1000 + util.Random.nextInt(9000)).toString
   }
 }
-
-// Zlecenie tranzakcji (POST) -> wysłany sms (oczekiwanie na potwierdzenie) -> wysłanie sms (POST) -> tranzakcja zaceptowana
-// Zlecenie tranzakcji (POST) -> wysłany sms (oczekiwanie na potwierdzenie) -> odrzucenie tranzakcji (POST) tranzakcaj odrzucona
-// Zlecenie tranzakcji (POST) -> wysłany sms (oczekiwanie na potwierdzenie) -> czas minal -> tranzakcaj odrzucona

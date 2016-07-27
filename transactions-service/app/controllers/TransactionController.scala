@@ -4,21 +4,17 @@ import javax.inject.Inject
 
 import actors.{CancelTransaction, StartTransaction, TransactionActor, VerifyTransactionWithSms}
 import akka.actor.ActorDSL._
-import akka.actor.{ActorDSL, ActorSystem, Props}
+import akka.actor.{ActorSystem, Props}
 import com.typesafe.scalalogging.LazyLogging
 import io.swagger.annotations._
 import models.dao.TransactionDao
 import models.{Transaction, TransactionVerification}
-import play.api.libs.json.{JsSuccess, Json}
-import play.api.mvc.{Action, AnyContent, Controller}
-import play.mvc.Http.Request
-import play.mvc.Result
-import akka.pattern.ask
 import play.Play
+import play.api.libs.json.{JsSuccess, Json}
 import play.api.libs.ws.WSClient
+import play.api.mvc.{Action, Controller}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 /**
   * Created by kuba on 25.05.16.

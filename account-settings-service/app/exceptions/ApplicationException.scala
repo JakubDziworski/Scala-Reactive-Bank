@@ -1,6 +1,5 @@
 package exceptions
 
-import models.{TransactionVerification}
 import play.api.mvc.{Results, Result}
 
 /**

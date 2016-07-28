@@ -22,8 +22,7 @@ Once the containers are up and running you can access services with swagger via:
 
 ## Running manually
 
-Setup postgres database with credentials specified in
-```account-settings-service/conf/application.conf```.
+Setup postgres database with credentials specified in `account-settings-service/conf/application.conf`.
 No schemas or tables are required - just user and database.
 
 Cd into each service and run:

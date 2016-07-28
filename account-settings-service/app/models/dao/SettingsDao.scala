@@ -35,7 +35,7 @@ class SettingsDao extends LazyLogging {
   def saveSettings(setting: Setting): Future[Unit] = {
     db.run(
       settings += setting
-    ).map(_ => Future.successful())
+    ).map(_ => Future.successful()).failed.map(ex => Future.failed(ex))
   }
 
   def getCurrentSettings(accountId: Long): Future[Setting] = {

@@ -1,0 +1,40 @@
+version: '2'
+services:
+  postgresql:
+    image: postgres
+    environment:
+      POSTGRES_DB: reactive_bank_settings
+      POSTGRES_USER: reactive_bank_user
+      POSTGRES_PASSWORD: user
+    ports:
+      - "5432:5432"
+
+  settings-service:
+    image: ingensi/play-framework
+    ports:
+     - "9001:9000"
+    volumes:
+     - ./account-settings-service/:/app:rw
+    tty: true
+    depends_on:
+      - postgresql
+    links:
+      - postgresql:postgreshost
+
+  transaction-service:
+    image: ingensi/play-framework
+    ports:
+     - "9000:9000"
+    volumes:
+     - ./transactions-service/:/app:rw
+    tty: true
+    links:
+      - settings-service
+
+  accounts-service:
+    image: ingensi/play-framework
+    ports:
+     - "9002:9000"
+    volumes:
+     - ./accounts-service/:/app:rw
+    tty: true

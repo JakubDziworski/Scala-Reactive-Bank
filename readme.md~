@@ -1,0 +1,10 @@
+# Technologies used:
+* play
+* specs2 (each service has tests in "test" subdirectory)
+* slick (see SettingsDao.scala)
+* akka actors (see transactions-service/app/actors/*)
+* swagger (all controllers are documented)
+* docker (including docker compose)
+
+#Running with docker
+

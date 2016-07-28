@@ -24,12 +24,12 @@ case class AccountSettingsController @Inject()(accountSettingsDao: SettingsDao) 
   val DEFAULT_LIMIT:BigDecimal = 50000
   implicit def tuplesWrites = Json.reads[Transaction]
 
-  @ApiOperation(value = "Test if API is reachable")
+  @ApiOperation(value = "test",notes="Checks if API is reachable")
   def test = Action {
     Ok("Reactive Bank - Account Settings Service - REACHABLE")
   }
 
-  @ApiOperation(value = "set settings")
+  @ApiOperation(value = "set settings",notes = "Sets money value limit for transaction")
   @ApiImplicitParams(Array(new ApiImplicitParam(name = "settings", dataType = "models.domain.Setting", required = true, paramType = "body")))
   def setSettings = Action.async(parse.json) { request =>
     Json.fromJson[Setting](request.body) match {
@@ -41,7 +41,7 @@ case class AccountSettingsController @Inject()(accountSettingsDao: SettingsDao) 
     }
   }
 
-  @ApiOperation(value = "checkPermissions")
+  @ApiOperation(value = "checkPermissions",notes = "Checks if the transaction value is not higher than the settings limit")
   @ApiImplicitParams(Array(new ApiImplicitParam(name = "checkPermissions", dataType = "models.domain.dto.Transaction", required = true, paramType = "body")))
   def checkPermissions = Action.async(parse.json) { request =>
     Json.fromJson(request.body) match {

@@ -26,12 +26,12 @@ case class TransactionController @Inject() (ws:WSClient,transactionDao: Transact
   implicit val actorSystem = ActorSystem("Transactions")
   val transactionActor = actorSystem.actorOf(Props(new TransactionActor(transactionDao)))
 
-  @ApiOperation(value = "Test if API is reachable")
+  @ApiOperation(value = "Test if API is reachable",notes="Test if API is reachable")
   def test = Action {
     Ok("Reactive Bank - Transactions Service - REACHABLE")
   }
 
-  @ApiOperation(value = "Trigger transaction")
+  @ApiOperation(value = "Trigger transaction",notes = "Starts transaction. Returns sms code to provide in verification (/verify)")
   @ApiImplicitParams(Array(new ApiImplicitParam(name = "transaction", dataType = "models.Transaction", required = true, paramType = "body")))
   def startTransaction = Action.async(parse.json) { request =>
     Json.fromJson[Transaction](request.body) match {
@@ -39,7 +39,7 @@ case class TransactionController @Inject() (ws:WSClient,transactionDao: Transact
         val permissionUrl = Play.application().configuration().getString("settings.service.permission.check.url")
         val post = ws.url(permissionUrl)
             .withHeaders("Content-Type" -> "application/json")
-            .post("{\"accountId\": "+transaction.from + ",\"cashAmount\": " + transaction.cashAmount + "}")
+            .post("{\"accountId\": "+transaction.from + ",\"transferValue\": " + transaction.cashAmount + "}")
         post.map {
           case response if response.status == 200 => {
             implicit val i = inbox()
@@ -55,7 +55,7 @@ case class TransactionController @Inject() (ws:WSClient,transactionDao: Transact
     }
   }
 
-  @ApiOperation(value = "Verify triggered transaction with sms code provided from 'start' request")
+  @ApiOperation(value = "Verify",notes = "Verify triggered transaction with sms code provided from '/start' request")
   @ApiImplicitParams(Array(new ApiImplicitParam(name = "smsVerification", dataType = "models.TransactionVerification", required = true, paramType = "body")))
   def verifyTransactionWithSms = Action(parse.json) {
     request => Json.fromJson[TransactionVerification](request.body) match {
@@ -70,7 +70,7 @@ case class TransactionController @Inject() (ws:WSClient,transactionDao: Transact
     }
   }
 
-  @ApiOperation(value = "Cancel transaction, which waits for verification (sms code)")
+  @ApiOperation(value ="Cancel transaction", notes = "Cancel transaction, which waits for verification (sms code)")
   @ApiImplicitParams(Array(new ApiImplicitParam(name = "transactionId",dataType = "Long", required = true, paramType = "body")))
   def cancelTransaction = Action(parse.json) {
     request => Json.fromJson[Long](request.body) match {

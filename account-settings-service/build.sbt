@@ -9,14 +9,15 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala)
 scalaVersion := "2.11.6"
 
 libraryDependencies ++= Seq(
+  specs2 % Test,
   jdbc,
   cache,
   ws,
-  specs2 % Test,
   "io.swagger" %% "swagger-play2" % "1.5.1",
   "org.postgresql" % "postgresql" % "9.3-1104-jdbc41",
   "com.typesafe.slick" %% "slick" % "3.0.0"
 )
+resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 
 libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.4.0"
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.1.7"

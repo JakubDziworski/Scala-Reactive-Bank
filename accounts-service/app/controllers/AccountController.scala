@@ -3,7 +3,7 @@ package controllers
 import javax.inject.{Inject, Singleton}
 
 import com.typesafe.scalalogging.LazyLogging
-import io.swagger.annotations.{ApiImplicitParams, _}
+import io.swagger.annotations.{ApiImplicitParams, ApiOperation, _}
 import models.Account
 import models.dao.AccountDao
 import play.api.libs.json.{JsError, JsSuccess, Json}
@@ -13,7 +13,7 @@ import play.api.mvc.{Action, Controller, Result}
   * Created by kuba on 25.05.16.
   */
 
-@Api("account Account")
+@Api("Account Service")
 @Singleton
 case class AccountController @Inject()(val accountDao: AccountDao) extends Controller with LazyLogging {
 
@@ -21,6 +21,7 @@ case class AccountController @Inject()(val accountDao: AccountDao) extends Contr
     Ok("Reactive Bank - account module - REACHABLE")
   }
 
+  @ApiOperation(value="Add account",notes= "Adds new account")
   @ApiImplicitParams(Array(new ApiImplicitParam(name = "account", dataType = "models.Account", required = true, paramType = "body")))
   def addAccount = Action(parse.json) { request =>
     Json.fromJson[Account](request.body) match {
@@ -32,6 +33,7 @@ case class AccountController @Inject()(val accountDao: AccountDao) extends Contr
     }
   }
 
+  @ApiOperation(value="Get account",notes= "Gets account by id")
   @ApiImplicitParams(Array(new ApiImplicitParam(name = "account id", required = true)))
   def getAccount(accountId: Long) = Action {
     performActionOnAccountWithId(accountId, account => {
@@ -40,6 +42,7 @@ case class AccountController @Inject()(val accountDao: AccountDao) extends Contr
     })
   }
 
+  @ApiOperation(value="Deposit",notes= "Deposits cash to the account")
   @ApiImplicitParams(Array(new ApiImplicitParam(name = "deposit value", dataType = "java.math.BigDecimal", required = true, paramType = "body")))
   def deposit(accountId: Long) = Action(parse.json) {
     request => Json.fromJson[Long](request.body) match {
@@ -54,6 +57,7 @@ case class AccountController @Inject()(val accountDao: AccountDao) extends Contr
     }
   }
 
+  @ApiOperation(value="Deposit",notes= "Withdraws cash from account (if there is sufficient money)")
   @ApiImplicitParams(Array(new ApiImplicitParam(name = "withdraw value", dataType = "java.math.BigDecimal", required = true, paramType = "body")))
   def withDraw(accountId: Long) = Action(parse.json) {
     request => Json.fromJson[Long](request.body) match {

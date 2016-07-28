@@ -1,0 +1,1 @@
+create database reactive_bank_settings

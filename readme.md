@@ -31,4 +31,4 @@ Cd into each service and run:
 sbt -Dhttp.port=<port> run
 ```
 
-where recommended port are: 9000 for transaction service, 9001 for settings and 9002 for accounts.
+where recommended ports are: 9000 for transaction service, 9001 for settings and 9002 for accounts.

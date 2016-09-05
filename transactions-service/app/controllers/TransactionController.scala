@@ -2,7 +2,7 @@ package controllers
 
 import javax.inject.Inject
 
-import actors.{CancelTransaction, StartTransaction, TransactionActor, VerifyTransactionWithSms}
+import actors._
 import akka.actor.ActorDSL._
 import akka.actor.{ActorSystem, Props}
 import com.typesafe.scalalogging.LazyLogging
@@ -10,11 +10,10 @@ import io.swagger.annotations._
 import models.dao.TransactionDao
 import models.{Transaction, TransactionVerification}
 import play.Play
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{JsSuccess, Json}
 import play.api.libs.ws.WSClient
 import play.api.mvc.{Action, Controller}
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
   * Created by kuba on 25.05.16.
@@ -24,7 +23,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 case class TransactionController @Inject() (ws:WSClient,transactionDao: TransactionDao) extends Controller with LazyLogging {
 
   implicit val actorSystem = ActorSystem("Transactions")
-  val transactionActor = actorSystem.actorOf(Props(new TransactionActor(transactionDao)))
+  val transactionStartingActor = actorSystem.actorOf(Props(new TransactionStartingActor(transactionDao)))
+  val transactionCancellingActor = actorSystem.actorOf(Props(new TransactionCancellingActor(transactionDao)))
+  val transactionSmsVerifierActor = actorSystem.actorOf(Props(new TransactionSmsVerifierActor(transactionDao)))
 
   @ApiOperation(value = "Test if API is reachable",notes="Test if API is reachable")
   def test = Action {
@@ -43,7 +44,7 @@ case class TransactionController @Inject() (ws:WSClient,transactionDao: Transact
         post.map {
           case response if response.status == 200 => {
             implicit val i = inbox()
-            transactionActor ! StartTransaction(transaction)
+            transactionStartingActor ! StartTransaction(transaction)
             i.receive() match {
               case sms:TransactionVerification => Ok(Json.toJson[TransactionVerification](sms))
             }
@@ -61,7 +62,7 @@ case class TransactionController @Inject() (ws:WSClient,transactionDao: Transact
     request => Json.fromJson[TransactionVerification](request.body) match {
       case JsSuccess(sms,_) => {
         implicit val i = inbox()
-        transactionActor ! VerifyTransactionWithSms(sms)
+        transactionSmsVerifierActor ! VerifyTransactionWithSms(sms)
         i.receive() match {
           case str:String => Ok(str)
           case _ => throw new RuntimeException("Unknown error")
@@ -76,7 +77,7 @@ case class TransactionController @Inject() (ws:WSClient,transactionDao: Transact
     request => Json.fromJson[Long](request.body) match {
       case JsSuccess(transactionId,_) => {
         implicit val i = inbox()
-        transactionActor ! CancelTransaction(transactionId)
+        transactionCancellingActor ! CancelTransaction(transactionId)
         i.receive() match {
           case str:String => Ok(str)
           case _ => throw new RuntimeException("Unknown error")

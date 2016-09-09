@@ -8,11 +8,18 @@ services:
       POSTGRES_PASSWORD: user
     ports:
       - "5432:5432"
+  mongodb:
+    image: mongo
+    ports:
+      - "27016:27017"
 
   settings-service:
     image: ingensi/play-framework
+    environment:
+      JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"
     ports:
      - "9001:9000"
+     - "5006:5005"
     volumes:
      - ./account-settings-service/:/app:rw
     tty: true
@@ -20,21 +27,31 @@ services:
       - postgresql
     links:
       - postgresql:postgreshost
+      
 
   transaction-service:
     image: ingensi/play-framework
+    environment:
+      JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"
     ports:
      - "9000:9000"
+     - "5005:5005"
     volumes:
      - ./transactions-service/:/app:rw
     tty: true
+    depends_on:
+     - mongodb
     links:
+      - mongodb:mongodb
       - settings-service
 
   accounts-service:
     image: ingensi/play-framework
+    environment:
+      JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"
     ports:
      - "9002:9000"
+     - "5007:5005"
     volumes:
      - ./accounts-service/:/app:rw
     tty: true

@@ -1,0 +1,4 @@
+http.response.permissions.error=The transaction cannot be performed due to user settings limitations
+http.response.unexpected.error=Unknown error
+http.response.transaction.cancelled=Transaction (id: {0}) sucesfully cancelled
+http.response.transaction.verified=Transaction (id: {0}) verified 

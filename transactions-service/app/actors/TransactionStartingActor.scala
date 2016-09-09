@@ -1,30 +1,35 @@
 package actors
 
+import java.util.UUID
+
+import actors.messages.{StartTransaction, TransactionStarted}
 import akka.actor.Actor
+import com.fasterxml.jackson.annotation.ObjectIdGenerators.UUIDGenerator
 import models.dao.TransactionDao
-import models.{Transaction, TransactionVerification}
+import models.{Transaction, TransactionSmsCode}
+
+import concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
   * Created by kuba on 05.09.16.
   */
-class TransactionStartingActor(dao:TransactionDao) extends Actor {
+class TransactionStartingActor(dao: TransactionDao) extends Actor {
 
   override def receive: Receive = {
     case StartTransaction(transaction) => startTransaction(transaction)
   }
 
-  def startTransaction(transaction: Transaction) = {
-    val transactionId = dao.getNextAvailableTransactionId
-    val transactionWithID = Transaction(transaction.from, transaction.to, transaction.title, transaction.cashAmount, Some(transactionId))
-    generateAndSendBackVerificicationCode(transactionWithID)
-    dao.addTransaction(transactionWithID)
-  }
-
-  def generateAndSendBackVerificicationCode(startTransaction: Transaction) = {
+  def startTransaction(transaction: Transaction): Future[Unit] = {
     val smsCode = SmsGenerator.getRandomCode
-    val smsVerification = TransactionVerification(startTransaction.id.get, smsCode)
-    sender ! smsVerification
-    dao addAwaitingVerification smsVerification
+    val originSender = sender()
+    dao.addTransaction(transaction).map { transactionId =>
+      val transactionSmsCode = TransactionSmsCode(transactionId, smsCode)
+      dao.addTransactionSmsCode(transactionSmsCode)
+      originSender ! TransactionStarted(transactionSmsCode)
+    }.recover {
+      case e => originSender ! akka.actor.Status.Failure(e)
+    }
   }
 
   object SmsGenerator {

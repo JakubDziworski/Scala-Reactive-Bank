@@ -4,7 +4,7 @@
 * Slick with PostgreSQL
 * MongoDB with ReactiveMongo driver
 * Akka actors (see ```transactions-service/app/actors```)
-* Swagger (all controllers are documented and available for testing via /v1/swagger-ui)
+* Swagger (all controllers are documented and available via /v1/swagger-ui)
 * Docker (Docker Compose)
 
 ## Running with docker

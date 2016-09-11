@@ -1,0 +1,12 @@
+language: scala
+scala:
+  - 2.11
+
+jdk:
+  - oraclejdk8
+
+env:
+  - TEST_DIR=accounts-service
+  - TEST_DIR=transactions-service
+  - TEST_DIR=account-settings-service
+script: cd $TEST_DIR && sbt test

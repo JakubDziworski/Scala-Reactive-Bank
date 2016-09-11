@@ -1,3 +1,6 @@
+
+[![Build Status](https://travis-ci.org/JakubDziworski/Scala-Reactive-Bank.svg?branch=master)](https://travis-ci.org/JakubDziworski/Scala-Reactive-Bank)
+
 ## Technologies used
 * Play
 * Specs2 (each service has tests in ```test``` subdirectories)
@@ -10,6 +13,7 @@
 ## Running with docker
 
 Make sure ports 5432 (postgres),27016(mongo),9000,9001,9002 are available.
+
 
 Run
 ```bash

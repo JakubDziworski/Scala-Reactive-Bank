@@ -3,16 +3,14 @@ package controllers
 import javax.inject.Inject
 
 import com.typesafe.scalalogging.LazyLogging
-import models.dao.SettingsDao
 import io.swagger.annotations.{ApiImplicitParams, _}
+import models.dao.SettingsDao
 import models.domain.Setting
 import models.domain.dto.Transaction
 import play.api.libs.json._
-import play.api.libs.functional.syntax._
-import play.api.mvc.{Action, Controller, Request, Result}
+import play.api.mvc.{Action, Controller, Result}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 /**
   * Created by kuba on 25.05.16.
@@ -49,13 +47,11 @@ case class AccountSettingsController @Inject()(accountSettingsDao: SettingsDao) 
         def transactionVerifier(setting:Setting): Result = {
           val transferValue = transaction.transferValue
           val transferLimit = setting.transactionValueLimit.getOrElse(DEFAULT_LIMIT)
-          if (transferValue <= 0) {
-            return BadRequest("Cannot transfer non positive value")
+          transferValue match {
+            case t if t <= 0 => BadRequest("Cannot transfer non positive value")
+            case t if t > transferLimit => BadRequest("Transaction not allowed - limit exceeded")
+            case _ => Ok("Transaction allowed")
           }
-          if (transferLimit >= transferValue) {
-            return Ok("Transaction allowed")
-          }
-          return BadRequest("Transaction not allowed - limit exceeded")
         }
         accountSettingsDao.getCurrentSettings(transaction.accountId).map(transactionVerifier)
       }

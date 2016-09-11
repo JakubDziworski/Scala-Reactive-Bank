@@ -15,20 +15,12 @@ libraryDependencies ++= Seq(
   cache,
   ws,
   specs2 % Test,
-  "io.swagger" %% "swagger-play2" % "1.5.1"
+  "io.swagger" %% "swagger-play2" % "1.5.1",
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.4.0",
+  "ch.qos.logback" % "logback-classic" % "1.1.7",
+  "ch.qos.logback" % "logback-core" % "1.1.7",
+  "org.mockito" % "mockito-core" % "1.9.5" % "test"
 )
 
-libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.4.0"
-libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.1.7"
-// http://mvnrepository.com/artifact/ch.qos.logback/logback-core
-libraryDependencies += "ch.qos.logback" % "logback-core" % "1.1.7"
-
-libraryDependencies += "com.softwaremill.macwire" %% "macros" % "2.2.3" % "provided"
-
-libraryDependencies += "com.softwaremill.macwire" %% "util" % "2.2.3"
-
-libraryDependencies += "com.softwaremill.macwire" %% "proxy" % "2.2.3"
-
-libraryDependencies += "org.mockito" % "mockito-core" % "1.9.5" % "test"
-
 routesGenerator := InjectedRoutesGenerator
+

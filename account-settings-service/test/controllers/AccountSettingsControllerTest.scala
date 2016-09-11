@@ -1,6 +1,6 @@
 package controllers
 
-import models.dao.SettingsDao
+import models.dao.SettingsPostgresDao
 import models.domain.Setting
 import org.specs2.mock.Mockito
 import play.api.libs.json.Json
@@ -45,7 +45,7 @@ class AccountSettingsControllerTest extends PlaySpecification with Mockito {
   }
 
   def assertTransactionResult(transactionValue: BigDecimal, transactionLimit: BigDecimal): Future[Result] = {
-    val dao = mock[SettingsDao]
+    val dao = mock[SettingsPostgresDao]
     dao.getCurrentSettings(14312) returns Future(Setting(14312, Some(transactionLimit)))
 
     val controller = AccountSettingsController(dao)

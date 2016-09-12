@@ -19,9 +19,7 @@ import scala.concurrent.Future
 @Singleton
 case class AccountController @Inject()(val accountDao: AccountDao) extends Controller with LazyLogging {
 
-  def test = Action {
-    Ok("Reactive Bank - account module - REACHABLE")
-  }
+  def test = Action(Ok("Reactive Bank - account module - REACHABLE"))
 
   @ApiOperation(value="Add account",notes= "Adds new account")
   @ApiImplicitParams(Array(new ApiImplicitParam(name = "account", dataType = "models.Account", required = true, paramType = "body")))
